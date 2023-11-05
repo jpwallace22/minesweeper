@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Dispatch, MouseEvent, SetStateAction, useMemo, useState } from "react";
 import { Cell } from "./Cell";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { getGridData } from "./getGridData";
@@ -6,6 +6,7 @@ import { Coordinate } from "./playfield";
 
 export const Grid = () => {
   const [activeCells, setActiveCells] = useState<Set<string>>(new Set());
+  const [flaggedCells, setFlaggedCells] = useState<Set<string>>(new Set());
 
   const { minefield, width, height } = useMemo(
     () => getGridData({ difficulty: "easy" }),
@@ -49,20 +50,36 @@ export const Grid = () => {
     return evaluated;
   };
 
-  const onCellClick = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    coordinate?: Coordinate
-  ) => {
-    if (!coordinate) return;
-    const cellsToMakeActive = evaluateAdjacentCells({ coordinate });
+  const isActiveCell = (coordinate: Coordinate) =>
+    activeCells.has(JSON.stringify(coordinate));
 
-    const newActiveCells = new Set(activeCells);
-    cellsToMakeActive.forEach(coord => newActiveCells.add(coord));
-    setActiveCells(newActiveCells);
+  const isFlaggedCell = (coordinate: Coordinate) =>
+    flaggedCells.has(JSON.stringify(coordinate));
+
+  const onCellClick = (coordinate: Coordinate) => {
+    if (isFlaggedCell(coordinate)) return;
+    const cellsToMakeActive = evaluateAdjacentCells({ coordinate });
+    setActiveCells(prev => new Set([...prev, ...cellsToMakeActive]));
+  };
+
+  const onRightClick = (e: MouseEvent, coordinate: Coordinate) => {
+    e.preventDefault();
+    if (isActiveCell(coordinate)) return;
+
+    if (isFlaggedCell(coordinate)) {
+      setFlaggedCells(
+        prev =>
+          new Set(
+            [...prev].filter(coord => coord !== JSON.stringify(coordinate))
+          )
+      );
+    } else {
+      setFlaggedCells(prev => new Set([...prev, JSON.stringify(coordinate)]));
+    }
   };
 
   return (
-    <>
+    <div>
       {minefield.map((row, x) => (
         <div key={x} className="flex">
           {row.map((cellValue, y) => {
@@ -73,14 +90,15 @@ export const Grid = () => {
                 key={`${x}-${y}`}
                 value={cellValue}
                 coord={coordinate}
-                onClick={e => onCellClick(e, coordinate)}
-                // onContextMenu={onCellClick}
-                active={activeCells.has(JSON.stringify(coordinate))}
+                onClick={() => onCellClick(coordinate)}
+                onContextMenu={e => onRightClick(e, coordinate)}
+                active={isActiveCell(coordinate)}
+                flagged={isFlaggedCell(coordinate)}
               />
             );
           })}
         </div>
       ))}
-    </>
+    </div>
   );
 };

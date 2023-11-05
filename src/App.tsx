@@ -1,4 +1,3 @@
-import "./App.css";
 import { Grid } from "./playfield/Grid";
 
 function App() {

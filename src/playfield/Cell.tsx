@@ -1,10 +1,12 @@
 import { cva } from "class-variance-authority";
-import { ComponentPropsWithoutRef, FC } from "react";
-import { CellValue, Coordinate } from "./playfield";
+import { ComponentPropsWithoutRef, FC, MouseEvent, useRef } from "react";
 import { twMerge } from "tailwind-merge";
+import Icon from "./Icons";
+import { CellValue, Coordinate } from "./playfield";
 
-interface CellProps extends ComponentPropsWithoutRef<"div"> {
+interface CellProps extends Omit<ComponentPropsWithoutRef<"button">, "value"> {
   active: boolean;
+  flagged: boolean;
   value: CellValue;
   coord?: Coordinate;
 }
@@ -22,25 +24,15 @@ const styles = cva(
         true: "",
       },
       active: {
-        true: "bg-slate-300",
+        true: "bg-gray-300",
         false: [
-          "bg-gray-300",
+          "bg-gray-400",
           "border-b-4 border-b-gray-500",
           "border-r-4 border-r-gray-500",
           "border-l-4 border-l-white",
           "border-t-4 border-t-white",
+          "cursor-pointer",
         ],
-      },
-      value: {
-        "1": "text-blue-700",
-        "2": "text-green-600",
-        "3": "text-red-500",
-        "4": "text-blue-900",
-        "5": "text-red-900",
-        "6": "text-teal-700",
-        "7": "text-black",
-        "8": "text-slate-100",
-        bomb: "text-black",
       },
     },
     compoundVariants: [
@@ -52,19 +44,30 @@ const styles = cva(
     ],
   }
 );
-export const Cell: FC<CellProps> = ({ active, value, ...props }) => {
+export const Cell: FC<CellProps> = ({ active, value, flagged, ...props }) => {
+  const ref = useRef<HTMLButtonElement>(null);
   const isBomb = value === "bomb";
 
+  const onMouseDown = (e: MouseEvent) => {
+    if (e.button === 0 && !flagged && !isBomb) {
+      ref.current?.classList.add("pressed");
+    }
+  };
+  const onMouseUp = () => {
+    ref.current?.classList.remove("pressed");
+  };
+
   return (
-    <div
-      className={twMerge(styles({ active, isBomb, value }))}
-      onContextMenu={e => {
-        e.preventDefault();
-        console.log("Right click");
-      }}
+    <button
+      ref={ref}
+      className={twMerge(styles({ active, isBomb }))}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseOut={onMouseUp}
       {...props}
     >
-      {active && (value === "bomb" ? "B" : value)}
-    </div>
+      {active && <Icon id={value} />}
+      {flagged && <Icon id="flag" />}
+    </button>
   );
 };

@@ -1,4 +1,4 @@
-import { Dispatch, MouseEvent, SetStateAction, useMemo, useState } from "react";
+import { MouseEvent, useMemo, useState } from "react";
 import { Cell } from "./Cell";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { getGridData } from "./getGridData";
@@ -9,7 +9,7 @@ export const Grid = () => {
   const [flaggedCells, setFlaggedCells] = useState<Set<string>>(new Set());
 
   const { minefield, width, height } = useMemo(
-    () => getGridData({ difficulty: "easy" }),
+    () => getGridData({ difficulty: "hard" }),
     []
   );
 

@@ -44,7 +44,13 @@ const styles = cva(
     ],
   }
 );
-export const Cell: FC<CellProps> = ({ active, value, flagged, ...props }) => {
+export const Cell: FC<CellProps> = ({
+  active,
+  value,
+  flagged,
+  coord,
+  ...props
+}) => {
   const ref = useRef<HTMLButtonElement>(null);
   const isBomb = value === "bomb";
 

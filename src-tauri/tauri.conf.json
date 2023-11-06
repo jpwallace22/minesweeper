@@ -7,12 +7,15 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "minesweeper",
+    "productName": "Minesweeper",
     "version": "0.0.0"
   },
   "tauri": {
     "allowlist": {
       "all": false,
+      "window": {
+        "setSize": true
+      },
       "shell": {
         "all": false,
         "open": true

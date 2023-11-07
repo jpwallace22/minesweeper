@@ -1,9 +1,6 @@
+import { GameSettings } from "../settings/settings";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
-import { Coordinate, Difficulty, MineField, NumberValues } from "./playfield";
-
-interface GetGridDataArgs {
-  difficulty: Difficulty;
-}
+import { Coordinate, MineField, NumberValues } from "./playfield";
 
 interface GridSettings {
   width: number;
@@ -35,7 +32,7 @@ const gridData = {
  * @param difficulty - The difficulty level of the grid. It can be "easy", "medium", or "hard".
  * @returns The generated minefield grid based on the specified difficulty level. Each cell can either be undefined or contain a "bomb" value.
  */
-export const getGridData = ({ difficulty }: GetGridDataArgs) => {
+export const getGridData = ({ difficulty }: GameSettings) => {
   const settings = gridData[difficulty];
   const grid = generateGrid(settings);
   const bombCoords = generateBombCoordinates(settings);

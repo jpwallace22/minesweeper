@@ -3,14 +3,16 @@ import { Cell } from "./Cell";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { getGridData } from "./getGridData";
 import { Coordinate } from "./playfield";
+import { useSettingsContext } from "../settings/SettingsContext";
 
 export const Grid = () => {
   const [activeCells, setActiveCells] = useState<Set<string>>(new Set());
   const [flaggedCells, setFlaggedCells] = useState<Set<string>>(new Set());
+  const { difficulty } = useSettingsContext();
 
   const { minefield, width, height } = useMemo(
-    () => getGridData({ difficulty: "hard" }),
-    []
+    () => getGridData({ difficulty }),
+    [difficulty]
   );
 
   /**

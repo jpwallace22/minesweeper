@@ -59,6 +59,7 @@ export const Cell: FC<CellProps> = ({
       ref.current?.classList.add("pressed");
     }
   };
+
   const onMouseUp = () => {
     ref.current?.classList.remove("pressed");
   };

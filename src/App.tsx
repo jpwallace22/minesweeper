@@ -1,12 +1,16 @@
-import { useEffect } from "react";
-import { Grid } from "./playfield/Grid";
 import { LogicalSize, appWindow } from "@tauri-apps/api/window";
+import { useEffect } from "react";
 import useResizeObserver from "use-resize-observer";
+import { Grid } from "./playfield/Grid";
+import { ScoreBar } from "./playfield/ScoreBar";
+import { useGameState } from "./playfield/useGameState";
 import { SettingsProvider } from "./settings/SettingsContext";
 import { useSettings } from "./settings/useSettings";
+import { GameProvider } from "./playfield/GameContext";
 
 function App() {
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
+  const gameState = useGameState();
   const settings = useSettings();
 
   useEffect(() => {
@@ -18,11 +22,14 @@ function App() {
 
   return (
     <SettingsProvider value={settings}>
-      <div className="grid place-items-center w-screen h-screen">
-        <div ref={ref} className="w-fit h-fit">
-          <Grid />
+      <GameProvider value={gameState}>
+        <div className="grid place-items-center w-screen h-screen">
+          <div ref={ref} className="w-fit h-fit">
+            <ScoreBar />
+            <Grid />
+          </div>
         </div>
-      </div>
+      </GameProvider>
     </SettingsProvider>
   );
 }

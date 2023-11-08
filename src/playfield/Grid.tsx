@@ -1,26 +1,20 @@
-import { MouseEvent, useMemo, useState } from "react";
+import { MouseEvent, useMemo } from "react";
+import { useSettingsContext } from "../settings/SettingsContext";
 import { Cell } from "./Cell";
+import { useGameContext } from "./GameContext";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { getGridData } from "./getGridData";
 import { Coordinate } from "./playfield";
-import { useSettingsContext } from "../settings/SettingsContext";
 
 export const Grid = () => {
-  const [activeCells, setActiveCells] = useState<Set<string>>(new Set());
-  const [flaggedCells, setFlaggedCells] = useState<Set<string>>(new Set());
   const { difficulty } = useSettingsContext();
+  const [{ activeCells, flaggedCells }, dispatch] = useGameContext();
 
   const { minefield, width, height } = useMemo(
     () => getGridData({ difficulty }),
     [difficulty]
   );
 
-  /**
-   * Recursively evaluates adjacent cells of a given coordinate in a minefield.
-   * The function stops evaluating when it reaches a cell with a value.
-   *
-   * @returns An array of evaluated cell coordinates.
-   */
   const evaluateAdjacentCells = ({
     coordinate,
     evaluated = [],
@@ -61,7 +55,7 @@ export const Grid = () => {
   const onCellClick = (coordinate: Coordinate) => {
     if (isFlaggedCell(coordinate)) return;
     const cellsToMakeActive = evaluateAdjacentCells({ coordinate });
-    setActiveCells(prev => new Set([...prev, ...cellsToMakeActive]));
+    dispatch({ type: "ADD_ACTIVE_CELLS", payload: cellsToMakeActive });
   };
 
   const onRightClick = (e: MouseEvent, coordinate: Coordinate) => {
@@ -69,38 +63,40 @@ export const Grid = () => {
     if (isActiveCell(coordinate)) return;
 
     if (isFlaggedCell(coordinate)) {
-      setFlaggedCells(
-        prev =>
-          new Set(
-            [...prev].filter(coord => coord !== JSON.stringify(coordinate))
-          )
-      );
+      dispatch({
+        type: "REMOVE_FLAGGED_CELL",
+        payload: JSON.stringify(coordinate),
+      });
     } else {
-      setFlaggedCells(prev => new Set([...prev, JSON.stringify(coordinate)]));
+      dispatch({
+        type: "ADD_FLAGGED_CELL",
+        payload: JSON.stringify(coordinate),
+      });
     }
   };
 
   return (
-    <div>
-      {minefield.map((row, x) => (
-        <div key={x} className="flex">
-          {row.map((cellValue, y) => {
-            const coordinate: Coordinate = [x, y];
-
-            return (
-              <Cell
-                key={`${x}-${y}`}
-                value={cellValue}
-                coord={coordinate}
-                onClick={() => onCellClick(coordinate)}
-                onContextMenu={e => onRightClick(e, coordinate)}
-                active={isActiveCell(coordinate)}
-                flagged={isFlaggedCell(coordinate)}
-              />
-            );
-          })}
-        </div>
-      ))}
+    <div className="p-2 bg-gray-300">
+      <div className="border-4 border-t-gray-500 border-l-gray-500 border-b-white border-r-white">
+        {minefield.map((row, x) => (
+          <div key={x} className="flex">
+            {row.map((cellValue, y) => {
+              const coordinate: Coordinate = [x, y];
+              return (
+                <Cell
+                  key={`${x}-${y}`}
+                  value={cellValue}
+                  coord={coordinate}
+                  onClick={() => onCellClick(coordinate)}
+                  onContextMenu={e => onRightClick(e, coordinate)}
+                  active={isActiveCell(coordinate)}
+                  flagged={isFlaggedCell(coordinate)}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

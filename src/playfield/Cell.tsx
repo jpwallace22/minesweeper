@@ -24,13 +24,14 @@ const styles = cva(
         true: "",
       },
       active: {
-        true: "bg-gray-300",
+        true: "bg-gray-300 pointer-events-none",
         false: [
           "bg-gray-400",
-          "border-b-4 border-b-gray-500",
-          "border-r-4 border-r-gray-500",
-          "border-l-4 border-l-white",
-          "border-t-4 border-t-white",
+          "border-3",
+          "border-b-gray-500",
+          "border-r-gray-500",
+          "border-l-white",
+          "border-t-white",
           "cursor-pointer",
         ],
       },
@@ -55,7 +56,7 @@ export const Cell: FC<CellProps> = ({
   const isBomb = value === "bomb";
 
   const onMouseDown = (e: MouseEvent) => {
-    if (e.button === 0 && !flagged && !isBomb) {
+    if (e.button === 0 && !flagged) {
       ref.current?.classList.add("pressed");
     }
   };

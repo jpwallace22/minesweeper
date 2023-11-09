@@ -10,8 +10,8 @@ import { GameProvider } from "./playfield/GameContext";
 
 function App() {
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
-  const gameState = useGameState();
   const settings = useSettings();
+  const [gameState, dispatch] = useGameState(settings);
 
   useEffect(() => {
     if (!width || !height) return;
@@ -22,7 +22,7 @@ function App() {
 
   return (
     <SettingsProvider value={settings}>
-      <GameProvider value={gameState}>
+      <GameProvider value={[gameState, dispatch]}>
         <div className="grid place-items-center w-screen h-screen">
           <div ref={ref} className="w-fit h-fit">
             <ScoreBar />

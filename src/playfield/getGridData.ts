@@ -1,30 +1,6 @@
-import { GameSettings } from "../settings/settings";
+import { GameSettings } from "../settings/useSettings";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { Coordinate, MineField, NumberValues } from "./playfield";
-
-interface GridSettings {
-  width: number;
-  height: number;
-  bombCount: number;
-}
-
-const gridData = {
-  easy: {
-    width: 9,
-    height: 9,
-    bombCount: 10,
-  },
-  medium: {
-    width: 16,
-    height: 16,
-    bombCount: 32,
-  },
-  hard: {
-    width: 30,
-    height: 16,
-    bombCount: 60,
-  },
-};
 
 /**
  * Generates a minefield grid based on the specified difficulty level.
@@ -32,8 +8,7 @@ const gridData = {
  * @param difficulty - The difficulty level of the grid. It can be "easy", "medium", or "hard".
  * @returns The generated minefield grid based on the specified difficulty level. Each cell can either be undefined or contain a "bomb" value.
  */
-export const getGridData = ({ difficulty }: GameSettings) => {
-  const settings = gridData[difficulty];
+export const getGridData = (settings: GameSettings) => {
   const grid = generateGrid(settings);
   const bombCoords = generateBombCoordinates(settings);
   const gridWithBombs = addBombsToGrid({ grid, bombCoords });
@@ -52,7 +27,7 @@ export const getGridData = ({ difficulty }: GameSettings) => {
 const generateGrid = ({
   width,
   height,
-}: Pick<GridSettings, "height" | "width">): MineField =>
+}: Pick<GameSettings, "height" | "width">): MineField =>
   Array.from({ length: height }).map(() => Array.from({ length: width }));
 
 /**
@@ -68,7 +43,7 @@ function generateBombCoordinates({
   bombCount,
   width,
   height,
-}: GridSettings): Set<Coordinate> {
+}: GameSettings): Set<Coordinate> {
   if (bombCount > width * height) {
     throw new Error("Number of coordinates requested exceeds grid size.");
   }
@@ -113,7 +88,7 @@ const addCellValuesToGrid = ({
   width,
 }: {
   gridWithBombs: MineField;
-} & Pick<GridSettings, "height" | "width">) => {
+} & Pick<GameSettings, "height" | "width">) => {
   const minefield = gridWithBombs;
   for (let i = 0; i < height; i++) {
     for (let j = 0; j < width; j++) {

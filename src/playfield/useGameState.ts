@@ -1,33 +1,51 @@
 import { useReducer } from "react";
+import { GameSettings } from "../settings/useSettings";
+import { message } from "@tauri-apps/api/dialog";
 
-interface GameState {
+export interface GameState {
   activeCells: Set<string>;
   flaggedCells: Set<string>;
+  finished: null | "win" | "loss";
 }
 
-interface ActiveCells {
+interface ActiveCellsAction {
   type: "ADD_ACTIVE_CELLS";
   payload: string[];
 }
 
-interface FlaggedCells {
+interface FlaggedCellsAction {
   type: "ADD_FLAGGED_CELL" | "REMOVE_FLAGGED_CELL";
   payload: string;
 }
 
-interface ResetGame {
+interface ResetGameAction {
   type: "RESET_GAME";
   payload?: string;
 }
 
-type GameStateActions = ActiveCells | FlaggedCells | ResetGame;
+interface FinishGameAction {
+  type: "FINISH_GAME";
+  payload: "win" | "loss";
+}
+
+type GameStateActions =
+  | ActiveCellsAction
+  | FlaggedCellsAction
+  | ResetGameAction
+  | FinishGameAction;
 
 export type UseGameState = ReturnType<typeof useGameState>;
+
+const initialState = {
+  activeCells: new Set<string>(),
+  flaggedCells: new Set<string>(),
+  finished: null,
+};
 
 export const GameStateReducer = (
   state: GameState,
   action: GameStateActions
-) => {
+): GameState => {
   const { type, payload } = action;
   switch (type) {
     case "ADD_ACTIVE_CELLS":
@@ -47,21 +65,31 @@ export const GameStateReducer = (
           [...state.flaggedCells].filter(coord => coord !== payload)
         ),
       };
-    case "RESET_GAME":
+    case "FINISH_GAME":
       return {
-        activeCells: new Set<string>(),
-        flaggedCells: new Set<string>(),
+        ...state,
+        finished: payload,
       };
+    case "RESET_GAME":
+      return initialState;
     default:
       return state;
   }
 };
 
-export const useGameState = () => {
-  const [state, dispatch] = useReducer(GameStateReducer, {
-    activeCells: new Set<string>(),
-    flaggedCells: new Set<string>(),
-  });
+export const useGameState = ({ height, width, bombCount }: GameSettings) => {
+  const [state, dispatch] = useReducer(GameStateReducer, initialState);
+
+  if (
+    state.activeCells.size === height * width - bombCount &&
+    !state.finished
+  ) {
+    dispatch({ type: "FINISH_GAME", payload: "win" });
+    message("You won. Play again?", {
+      title: "Congratulations!!",
+      type: "info",
+    });
+  }
 
   return [state, dispatch] as const;
 };

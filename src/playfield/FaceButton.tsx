@@ -1,6 +1,7 @@
 import { cva } from "class-variance-authority";
 import { useEffect, useState } from "react";
 import { useGameContext } from "./GameContext";
+import { GameState } from "./useGameState";
 
 const styles = cva([
   "text-3xl",
@@ -16,7 +17,7 @@ const styles = cva([
 ]);
 
 export const FaceButton = () => {
-  const [, dispatch] = useGameContext();
+  const [{ finished }, dispatch] = useGameContext();
   const [pressed, setPressed] = useState(false);
 
   useEffect(() => {
@@ -33,7 +34,11 @@ export const FaceButton = () => {
       className={styles()}
       onClick={() => dispatch({ type: "RESET_GAME" })}
     >
-      {pressed ? "😮" : "🙂"}
+      {!!finished ? getFinishedFace(finished) : getGameFace(pressed)}
     </button>
   );
 };
+
+const getGameFace = (shocked: boolean) => (shocked ? "😮" : "🙂");
+const getFinishedFace = (finished: GameState["finished"]) =>
+  finished === "win" ? "🥳" : "😵";

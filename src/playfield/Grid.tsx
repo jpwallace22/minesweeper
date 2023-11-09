@@ -5,14 +5,29 @@ import { useGameContext } from "./GameContext";
 import { getAdjacentCoordinates } from "./getAdjacentCoordinates";
 import { getGridData } from "./getGridData";
 import { Coordinate } from "./playfield";
+import { cva } from "class-variance-authority";
+
+const gridStyles = cva(
+  [
+    "border-4 border-t-gray-500 border-l-gray-500 border-b-white border-r-white",
+  ],
+  {
+    variants: {
+      disabled: {
+        true: "pointer-events-none",
+      },
+    },
+  }
+);
 
 export const Grid = () => {
-  const { difficulty } = useSettingsContext();
-  const [{ activeCells, flaggedCells }, dispatch] = useGameContext();
+  const settings = useSettingsContext();
+  const [{ activeCells, flaggedCells, finished }, dispatch] = useGameContext();
+  console.log("🔍 ~ Grid ~ finished:", finished);
 
   const { minefield, width, height } = useMemo(
-    () => getGridData({ difficulty }),
-    [difficulty]
+    () => getGridData(settings),
+    [settings]
   );
 
   const evaluateAdjacentCells = ({
@@ -46,6 +61,7 @@ export const Grid = () => {
     return evaluated;
   };
 
+  // TODO move to Cell with context
   const isActiveCell = (coordinate: Coordinate) =>
     activeCells.has(JSON.stringify(coordinate));
 
@@ -53,6 +69,9 @@ export const Grid = () => {
     flaggedCells.has(JSON.stringify(coordinate));
 
   const onCellClick = (coordinate: Coordinate) => {
+    if (minefield[coordinate[0]][coordinate[1]] === "bomb") {
+      dispatch({ type: "FINISH_GAME", payload: "loss" });
+    }
     if (isFlaggedCell(coordinate)) return;
     const cellsToMakeActive = evaluateAdjacentCells({ coordinate });
     dispatch({ type: "ADD_ACTIVE_CELLS", payload: cellsToMakeActive });
@@ -77,7 +96,7 @@ export const Grid = () => {
 
   return (
     <div className="p-2 bg-gray-300">
-      <div className="border-4 border-t-gray-500 border-l-gray-500 border-b-white border-r-white">
+      <div className={gridStyles({ disabled: !!finished })}>
         {minefield.map((row, x) => (
           <div key={x} className="flex">
             {row.map((cellValue, y) => {

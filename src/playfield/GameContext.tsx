@@ -1,6 +1,6 @@
-import type { FC, ReactNode } from "react";
-import { createContext, useContext } from "react";
-import { UseGameState } from "./useGameState";
+import type { FC, ReactNode } from 'react';
+import { createContext, useContext } from 'react';
+import { UseGameState } from './useGameState';
 
 export type GameContext = UseGameState;
 

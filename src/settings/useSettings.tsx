@@ -1,7 +1,7 @@
-import { listen } from "@tauri-apps/api/event";
-import { useReducer } from "react";
+import { listen } from '@tauri-apps/api/event';
+import { useReducer } from 'react';
 
-export type Difficulty = "easy" | "medium" | "hard";
+export type Difficulty = 'easy' | 'medium' | 'hard';
 export interface GameSettings {
   width: number;
   height: number;
@@ -9,7 +9,7 @@ export interface GameSettings {
 }
 
 interface SetDifficultyAction {
-  type: "SET_DIFFICULTY";
+  type: 'SET_DIFFICULTY';
   payload: Difficulty;
 }
 
@@ -39,7 +39,7 @@ export const settingsReducer = (
 ) => {
   const { type, payload } = action;
   switch (type) {
-    case "SET_DIFFICULTY":
+    case 'SET_DIFFICULTY':
       return { ...state, ...gridData[payload] };
     default:
       return state;
@@ -50,11 +50,11 @@ export type UseSettings = ReturnType<typeof useSettings>;
 
 export const useSettings = () => {
   const [state, dispatch] = useReducer(settingsReducer, {
-    ...gridData["easy"],
+    ...gridData['easy'],
   });
 
-  listen("difficulty_setting", ({ payload }: { payload: Difficulty }) =>
-    dispatch({ type: "SET_DIFFICULTY", payload })
+  listen('difficulty_setting', ({ payload }: { payload: Difficulty }) =>
+    dispatch({ type: 'SET_DIFFICULTY', payload })
   );
 
   return state;

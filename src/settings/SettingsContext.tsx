@@ -1,6 +1,6 @@
-import type { FC, ReactNode } from "react";
-import { createContext, useContext } from "react";
-import { UseSettings } from "./useSettings";
+import type { FC, ReactNode } from 'react';
+import { createContext, useContext } from 'react';
+import { UseSettings } from './useSettings';
 
 export type SettingsContext = UseSettings;
 

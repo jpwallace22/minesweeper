@@ -1,94 +1,149 @@
-import { useReducer } from "react";
-import { GameSettings } from "../settings/useSettings";
-import { message } from "@tauri-apps/api/dialog";
+import { message } from '@tauri-apps/api/dialog';
+import { useEffect, useMemo, useReducer } from 'react';
+import { GameSettings } from '../settings/useSettings';
+import { getGridData } from './getGridData';
+import { MineField } from './playfield';
 
 export interface GameState {
+  running: boolean;
+  minefield: MineField;
+  finished: null | 'win' | 'loss';
+  time: number;
   activeCells: Set<string>;
   flaggedCells: Set<string>;
-  finished: null | "win" | "loss";
 }
 
 interface ActiveCellsAction {
-  type: "ADD_ACTIVE_CELLS";
+  type: 'ADD_ACTIVE_CELLS';
   payload: string[];
 }
 
+interface AddSecondToTime {
+  type: 'SET_TIMER';
+  payload: number;
+}
+
 interface FlaggedCellsAction {
-  type: "ADD_FLAGGED_CELL" | "REMOVE_FLAGGED_CELL";
+  type: 'ADD_FLAGGED_CELL' | 'REMOVE_FLAGGED_CELL';
   payload: string;
 }
 
 interface ResetGameAction {
-  type: "RESET_GAME";
-  payload?: string;
+  type: 'RESET_GAME';
+  payload: MineField;
 }
 
-interface FinishGameAction {
-  type: "FINISH_GAME";
-  payload: "win" | "loss";
+interface StartStopGameAction {
+  type: 'START_STOP';
+  payload: {
+    finished: 'win' | 'loss' | null;
+    running: boolean;
+  };
+}
+
+interface InitField {
+  type: 'INIT_MINEFIELD';
+  payload: MineField;
 }
 
 type GameStateActions =
   | ActiveCellsAction
   | FlaggedCellsAction
   | ResetGameAction
-  | FinishGameAction;
+  | StartStopGameAction
+  | InitField
+  | AddSecondToTime;
 
 export type UseGameState = ReturnType<typeof useGameState>;
 
-const initialState = {
+const resettableState = {
   activeCells: new Set<string>(),
   flaggedCells: new Set<string>(),
   finished: null,
+  running: false,
+  time: 0,
 };
 
 export const GameStateReducer = (
   state: GameState,
   action: GameStateActions
 ): GameState => {
-  const { type, payload } = action;
-  switch (type) {
-    case "ADD_ACTIVE_CELLS":
+  switch (action.type) {
+    case 'ADD_ACTIVE_CELLS':
       return {
         ...state,
-        activeCells: new Set([...state.activeCells, ...payload]),
+        activeCells: new Set([...state.activeCells, ...action.payload]),
       };
-    case "ADD_FLAGGED_CELL":
+    case 'ADD_FLAGGED_CELL':
       return {
         ...state,
-        flaggedCells: new Set([...state.flaggedCells, payload]),
+        flaggedCells: new Set([...state.flaggedCells, action.payload]),
       };
-    case "REMOVE_FLAGGED_CELL":
+    case 'REMOVE_FLAGGED_CELL':
       return {
         ...state,
         flaggedCells: new Set(
-          [...state.flaggedCells].filter(coord => coord !== payload)
+          [...state.flaggedCells].filter(coord => coord !== action.payload)
         ),
       };
-    case "FINISH_GAME":
+    case 'START_STOP':
       return {
         ...state,
-        finished: payload,
+        ...action.payload,
       };
-    case "RESET_GAME":
-      return initialState;
+    case 'SET_TIMER':
+      return {
+        ...state,
+        time: action.payload,
+      };
+    case 'RESET_GAME':
+      return {
+        ...resettableState,
+        minefield: action.payload,
+      };
     default:
       return state;
   }
 };
 
-export const useGameState = ({ height, width, bombCount }: GameSettings) => {
-  const [state, dispatch] = useReducer(GameStateReducer, initialState);
+const timer = new Worker('./src/playfield/timer.ts');
 
-  if (
-    state.activeCells.size === height * width - bombCount &&
-    !state.finished
-  ) {
-    dispatch({ type: "FINISH_GAME", payload: "win" });
-    message("You won. Play again?", {
-      title: "Congratulations!!",
-      type: "info",
+export const useGameState = (settings: GameSettings) => {
+  const { height, width, bombCount } = settings;
+  const [state, dispatch] = useReducer(GameStateReducer, {
+    ...resettableState,
+    minefield: [],
+  });
+  const { activeCells, finished, running } = state;
+  console.log('🔍 ~ useGameState ~ running:', running);
+  console.log('🔍 ~ useGameState ~ finished:', finished);
+
+  useEffect(() => {
+    timer.onmessage = e => {
+      dispatch({ type: 'SET_TIMER', payload: e.data });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (running) {
+      timer.postMessage('START');
+    } else {
+      console.log('stop fired');
+      timer.postMessage('STOP');
+    }
+  }, [running]);
+
+  useMemo(() => {
+    const { minefield } = getGridData(settings);
+    dispatch({ type: 'RESET_GAME', payload: minefield });
+  }, [settings.height, settings.height, settings.bombCount]);
+
+  if (activeCells.size === height * width - bombCount && !finished) {
+    dispatch({
+      type: 'START_STOP',
+      payload: { finished: 'win', running: false },
     });
+    message('You won. Play again?', 'Congratulations!!');
   }
 
   return [state, dispatch] as const;

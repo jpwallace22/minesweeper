@@ -1,18 +1,19 @@
-import { LogicalSize, appWindow } from "@tauri-apps/api/window";
-import { useEffect } from "react";
-import useResizeObserver from "use-resize-observer";
-import { Grid } from "./playfield/Grid";
-import { ScoreBar } from "./playfield/ScoreBar";
-import { useGameState } from "./playfield/useGameState";
-import { SettingsProvider } from "./settings/SettingsContext";
-import { useSettings } from "./settings/useSettings";
-import { GameProvider } from "./playfield/GameContext";
+import { LogicalSize, appWindow } from '@tauri-apps/api/window';
+import { useEffect } from 'react';
+import useResizeObserver from 'use-resize-observer';
+import { Grid } from './playfield/Grid';
+import { ScoreBar } from './playfield/ScoreBar';
+import { useGameState } from './playfield/useGameState';
+import { SettingsProvider } from './settings/SettingsContext';
+import { useSettings } from './settings/useSettings';
+import { GameProvider } from './playfield/GameContext';
 
 function App() {
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
   const settings = useSettings();
   const [gameState, dispatch] = useGameState(settings);
 
+  // Adjust window size based on app width / height
   useEffect(() => {
     if (!width || !height) return;
     (async () => {

@@ -1,7 +1,7 @@
 import { message } from '@tauri-apps/api/dialog';
 import { useEffect, useMemo, useReducer } from 'react';
 import { GameSettings } from '../settings/useSettings';
-import { getGridData } from './getGridData';
+import { getGridData } from '../utils/getGridData';
 import { MineField } from './playfield';
 
 export interface GameState {
@@ -106,7 +106,7 @@ export const GameStateReducer = (
   }
 };
 
-const timer = new Worker('./src/playfield/timer.ts');
+const timer = new Worker('./src/utils/timer.ts');
 
 export const useGameState = (settings: GameSettings) => {
   const { height, width, bombCount } = settings;
@@ -115,8 +115,6 @@ export const useGameState = (settings: GameSettings) => {
     minefield: [],
   });
   const { activeCells, finished, running } = state;
-  console.log('🔍 ~ useGameState ~ running:', running);
-  console.log('🔍 ~ useGameState ~ finished:', finished);
 
   useEffect(() => {
     timer.onmessage = e => {
@@ -128,7 +126,6 @@ export const useGameState = (settings: GameSettings) => {
     if (running) {
       timer.postMessage('START');
     } else {
-      console.log('stop fired');
       timer.postMessage('STOP');
     }
   }, [running]);

@@ -14,6 +14,7 @@ mod menu;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .menu(
             Menu::new()
                 .add_default_app_submenu_if_macos("Minesweeper")
@@ -35,6 +36,10 @@ fn main() {
             "hard" => event
                 .window()
                 .emit("difficulty_setting", "hard".to_string())
+                .unwrap(),
+            "scores" => event
+                .window()
+                .emit("windows", "scores".to_string())
                 .unwrap(),
             _ => {}
         })

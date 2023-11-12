@@ -1,5 +1,5 @@
-import { GameSettings } from "../settings/useSettings";
-import { Coordinate, MineField, NumberValues } from "./playfield";
+import { GameSettings } from '../settings/useSettings';
+import { Coordinate, MineField, NumberValues } from '../playfield/playfield';
 
 /**
  * Generates a minefield grid based on the specified difficulty level.
@@ -26,7 +26,7 @@ export const getGridData = (settings: GameSettings) => {
 const generateGrid = ({
   width,
   height,
-}: Pick<GameSettings, "height" | "width">): MineField =>
+}: Pick<GameSettings, 'height' | 'width'>): MineField =>
   Array.from({ length: height }).map(() => Array.from({ length: width }));
 
 /**
@@ -44,7 +44,7 @@ function generateBombCoordinates({
   height,
 }: GameSettings): Set<Coordinate> {
   if (bombCount > width * height) {
-    throw new Error("Number of coordinates requested exceeds grid size.");
+    throw new Error('Number of coordinates requested exceeds grid size.');
   }
   const coordinates: Set<string> = new Set();
 
@@ -77,21 +77,30 @@ const addBombsToGrid = ({
   bombCoords: Set<Coordinate>;
 }): MineField => {
   const minefield = grid;
-  bombCoords.forEach(([x, y]) => (minefield[y][x] = "bomb"));
+  bombCoords.forEach(([x, y]) => (minefield[y][x] = 'bomb'));
   return minefield;
 };
 
+/**
+ * Adds cell number values to a grid by counting the number of bombs adjacent to each cell.
+ *
+ * @param {Object} params - The parameters object.
+ * @param {MineField} params.gridWithBombs - The grid with bombs represented by the string 'bomb'.
+ * @param {number} params.height - The height of the grid.
+ * @param {number} params.width - The width of the grid.
+ * @returns {MineField} - The grid with cell values added based on the number of adjacent bombs.
+ */
 const addCellValuesToGrid = ({
   gridWithBombs,
   height,
   width,
 }: {
   gridWithBombs: MineField;
-} & Pick<GameSettings, "height" | "width">) => {
+} & Pick<GameSettings, 'height' | 'width'>) => {
   const minefield = gridWithBombs;
   for (let i = 0; i < height; i++) {
     for (let j = 0; j < width; j++) {
-      if (minefield[i][j] !== "bomb") {
+      if (minefield[i][j] !== 'bomb') {
         let bombTouchingCount = 0;
         const adjacentCoords = getAdjacentCoordinates({
           coordinate: [i, j],
@@ -99,7 +108,7 @@ const addCellValuesToGrid = ({
           width,
         });
         for (const [x, y] of adjacentCoords) {
-          if (minefield[x][y] === "bomb") {
+          if (minefield[x][y] === 'bomb') {
             bombTouchingCount++;
           }
         }
@@ -113,6 +122,15 @@ const addCellValuesToGrid = ({
   return minefield;
 };
 
+/**
+ * Returns an array of adjacent coordinates based on the given coordinate, height, and width (to prevent leaving the grid).
+ *
+ * @param {Object} options - The options object.
+ * @param {Coordinate} options.coordinate - The coordinate for which adjacent coordinates need to be found.
+ * @param {number} options.height - The height of the grid.
+ * @param {number} options.width - The width of the grid.
+ * @returns {Coordinate[]} - An array of adjacent coordinates.
+ */
 export const getAdjacentCoordinates = ({
   coordinate,
   height,

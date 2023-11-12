@@ -1,7 +1,11 @@
 import { listen } from '@tauri-apps/api/event';
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
+import { useTauriStore } from '../utils/useTauriStore';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export interface Store {
+  difficulty: Difficulty;
+}
 export interface GameSettings {
   width: number;
   height: number;
@@ -49,13 +53,27 @@ export const settingsReducer = (
 export type UseSettings = ReturnType<typeof useSettings>;
 
 export const useSettings = () => {
-  const [state, dispatch] = useReducer(settingsReducer, {
-    ...gridData['easy'],
+  const [state, dispatch] = useReducer(settingsReducer, gridData.easy);
+  const [store, setStore] = useTauriStore<Store>('settings', {
+    difficulty: 'easy',
   });
 
-  listen('difficulty_setting', ({ payload }: { payload: Difficulty }) =>
-    dispatch({ type: 'SET_DIFFICULTY', payload })
-  );
+  useEffect(() => {
+    dispatch({ type: 'SET_DIFFICULTY', payload: store.difficulty });
+  }, [store.difficulty]);
+
+  useEffect(() => {
+    const unListen = listen(
+      'difficulty_setting',
+      ({ payload }: { payload: Difficulty }) => {
+        setStore({ ...store, difficulty: payload });
+      }
+    );
+
+    return () => {
+      unListen.then(f => f());
+    };
+  }, []);
 
   return state;
 };

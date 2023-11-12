@@ -30,13 +30,15 @@ impl AddDefaultSubmenus for Menu {
     fn add_custom_game_menu(self) -> Menu {
         self.add_submenu(Submenu::new(
             "Game",
-            Menu::new().add_submenu(Submenu::new(
-                "Difficulty",
-                Menu::new()
-                    .add_item(CustomMenuItem::new("easy".to_string(), "Easy"))
-                    .add_item(CustomMenuItem::new("medium".to_string(), "Medium"))
-                    .add_item(CustomMenuItem::new("hard".to_string(), "Hard")),
-            )),
+            Menu::new()
+                .add_submenu(Submenu::new(
+                    "Difficulty",
+                    Menu::new()
+                        .add_item(CustomMenuItem::new("easy".to_string(), "Easy"))
+                        .add_item(CustomMenuItem::new("medium".to_string(), "Medium"))
+                        .add_item(CustomMenuItem::new("hard".to_string(), "Hard")),
+                ))
+                .add_item(CustomMenuItem::new("scores".to_string(), "Scores")),
         ))
     }
 

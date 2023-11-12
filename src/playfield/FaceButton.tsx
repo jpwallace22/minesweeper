@@ -1,9 +1,9 @@
 import { cva } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
-import { useGameContext } from './GameContext';
-import { GameState } from './useGameState';
-import { getGridData } from './getGridData';
 import { useSettingsContext } from '../settings/SettingsContext';
+import { useGameContext } from './GameContext';
+import { getGridData } from '../utils/getGridData';
+import { GameState } from './useGameState';
 
 const styles = cva([
   'text-3xl',
@@ -19,7 +19,7 @@ const styles = cva([
 ]);
 
 export const FaceButton = () => {
-  const [{ finished }, dispatch] = useGameContext();
+  const [{ finished }, setGameState] = useGameContext();
   const settings = useSettingsContext();
   const [pressed, setPressed] = useState(false);
 
@@ -36,7 +36,7 @@ export const FaceButton = () => {
     <button
       className={styles()}
       onClick={() =>
-        dispatch({
+        setGameState({
           type: 'RESET_GAME',
           payload: getGridData(settings).minefield,
         })

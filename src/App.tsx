@@ -1,17 +1,34 @@
-import { LogicalSize, appWindow } from '@tauri-apps/api/window';
+import { listen } from '@tauri-apps/api/event';
+import { LogicalSize, WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import useResizeObserver from 'use-resize-observer';
+import { GameProvider } from './playfield/GameContext';
 import { Grid } from './playfield/Grid';
 import { ScoreBar } from './playfield/ScoreBar';
 import { useGameState } from './playfield/useGameState';
 import { SettingsProvider } from './settings/SettingsContext';
 import { useSettings } from './settings/useSettings';
-import { GameProvider } from './playfield/GameContext';
 
 function App() {
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
   const settings = useSettings();
-  const [gameState, dispatch] = useGameState(settings);
+  const [gameState, setGameState] = useGameState(settings);
+
+  // Listen for/create menu windows
+  useEffect(() => {
+    const unListen = listen('windows', ({ payload }: { payload: 'scores' }) => {
+      if (payload === 'scores') {
+        new WebviewWindow('scores', {
+          url: '../high_scores.html',
+          title: 'High Scores',
+        });
+      }
+    });
+
+    return () => {
+      unListen.then(f => f());
+    };
+  }, []);
 
   // Adjust window size based on app width / height
   useEffect(() => {
@@ -23,7 +40,7 @@ function App() {
 
   return (
     <SettingsProvider value={settings}>
-      <GameProvider value={[gameState, dispatch]}>
+      <GameProvider value={[gameState, setGameState]}>
         <div className="grid place-items-center w-screen h-screen">
           <div ref={ref} className="w-fit h-fit">
             <ScoreBar />

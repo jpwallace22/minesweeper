@@ -5,7 +5,7 @@ import { useSettingsContext } from '../settings/SettingsContext';
 import { useGameContext } from './GameContext';
 // import Icon from './Icons';
 import { CellValue, Coordinate, NumberValues } from './playfield';
-import { getAdjacentCoordinates } from './getGridData';
+import { getAdjacentCoordinates } from '../utils/getGridData';
 
 interface CellProps extends Omit<ComponentPropsWithoutRef<'button'>, 'value'> {
   coordinate: Coordinate;

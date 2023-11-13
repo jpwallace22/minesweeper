@@ -1,5 +1,5 @@
-import { listen } from '@tauri-apps/api/event';
 import { useEffect, useReducer } from 'react';
+import { useListen } from '../utils/useListen';
 import { useTauriStore } from '../utils/useTauriStore';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -28,12 +28,12 @@ const gridData = {
   medium: {
     width: 16,
     height: 16,
-    bombCount: 32,
+    bombCount: 40,
   },
   hard: {
     width: 30,
     height: 16,
-    bombCount: 60,
+    bombCount: 99,
   },
 };
 
@@ -62,18 +62,9 @@ export const useSettings = () => {
     dispatch({ type: 'SET_DIFFICULTY', payload: store.difficulty });
   }, [store.difficulty]);
 
-  useEffect(() => {
-    const unListen = listen(
-      'difficulty_setting',
-      ({ payload }: { payload: Difficulty }) => {
-        setStore({ ...store, difficulty: payload });
-      }
-    );
-
-    return () => {
-      unListen.then(f => f());
-    };
-  }, []);
+  useListen('difficulty_setting', ({ payload }: { payload: Difficulty }) => {
+    setStore({ ...store, difficulty: payload });
+  });
 
   return state;
 };

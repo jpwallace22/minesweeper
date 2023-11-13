@@ -7,8 +7,9 @@ function getTauriStore(filename: string) {
 }
 
 /**
- * A custom React hook that allows components to interact with a Tauri store.
+ * A hook that allows components to interact with a Tauri store.
  * The hook manages the state of a value stored in the Tauri store and provides functions to update and retrieve the value.
+ * This is data that will be written to the disk
  *
  * @param key - The key used to identify the value in the Tauri store.
  * @param defaultValue - The default value to use if the value is not found in the Tauri store.

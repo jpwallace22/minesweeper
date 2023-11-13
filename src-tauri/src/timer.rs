@@ -1,64 +1,51 @@
-// use std::iter;
-// use std::old_io::timer;
-// use std::old_io::Timer;
-// use std::sync::mpsc;
-// use std::time::duration::Duration;
+use crate::GameState;
+use std::{sync::Arc, time::Duration};
+use tokio::time::Instant;
 
-// fn main() {
-//     let interval = Duration::milliseconds(1000);
-//     let mut timer = Timer::new().unwrap();
-//     let metronome: mpsc::Receiver<()> = timer.periodic(interval);
+#[tauri::command]
+/// Controls a timer that emits every second to the frontend.
+///
+/// # Arguments
+///
+/// - `method` - A string indicating the action to perform on the timer. It can be either "start" or "stop".
+/// - `state` - A shared state object that contains the current state of the application.
+/// - `window` - A window object that represents the application window.
+///
+pub fn timer(method: &str, state: tauri::State<GameState>, window: tauri::Window) {
+    let mut running = state.running.lock().unwrap();
+    let start_time = Instant::now();
 
-//     println!("Countdown");
-//     for i in iter::range_step(999i32, 0, 1) {
-//         // This loop will run once every second
-//         let _ = metronome.recv();
-
-//         println!("{}", i);
-//     }
-//     let _ = metronome.recv();
-// }
-
-use std::io::timer;
-use std::io::Timer;
-use std::iter;
-use std::sync::mpsc;
-use std::time::duration::Duration;
-
-fn main() {
-    let interval = Duration::milliseconds(1000);
-    // Create a timer object
-    let mut timer = Timer::new().unwrap();
-
-    // Create a one-shot notification
-    // (superfluous type annotation)
-    let oneshot: mpsc::Receiver<()> = timer.oneshot(interval);
-
-    println!("Wait {} ms...", interval.num_milliseconds());
-
-    // Block the thread until notification arrives
-    let _ = oneshot.recv();
-
-    println!("Done");
-
-    println!("Sleep for {} ms...", interval.num_milliseconds());
-
-    // This is equivalent to `timer.oneshot(interval).recv()`
-    timer::sleep(interval);
-
-    println!("Done");
-
-    // The same timer can be used to generate periodic notifications
-    // (superfluous type annotation)
-    let metronome: mpsc::Receiver<()> = timer.periodic(interval);
-
-    println!("Countdown");
-    for i in iter::range_step(5i32, 0, -1) {
-        // This loop will run once every second
-        let _ = metronome.recv();
-
-        println!("{}", i);
+    match method {
+        "start" => {
+            *running = true;
+        }
+        "stop" => {
+            *running = false;
+        }
+        _ => (),
     }
-    let _ = metronome.recv();
-    println!("Ignition!");
+
+    if *running {
+        let running_inner = Arc::clone(&state.running);
+        tauri::async_runtime::spawn(async move {
+            println!("Async timer started");
+
+            for _elapsed_seconds in 0..999 {
+                tokio::time::sleep(Duration::from_secs(1)).await;
+
+                let current_time = Instant::now();
+                let elapsed = current_time.duration_since(start_time);
+                let elapsed_secs = elapsed.as_secs();
+
+                if !*running_inner.lock().unwrap() {
+                    println!("Timer stopped at {} seconds", elapsed_secs);
+                    break;
+                }
+
+                window.emit("timer_tick", Some(elapsed_secs)).unwrap();
+            }
+        });
+
+        println!("Timer hit max");
+    }
 }

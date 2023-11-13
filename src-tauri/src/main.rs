@@ -2,19 +2,22 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use crate::menu::AddDefaultSubmenus;
+use std::sync::{Arc, Mutex};
 use tauri::Menu;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+pub struct GameState {
+    running: Arc<Mutex<bool>>,
 }
 
 mod menu;
+mod timer;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
+        .manage(GameState {
+            running: Mutex::new(false).into(),
+        })
         .menu(
             Menu::new()
                 .add_default_app_submenu_if_macos("Minesweeper")
@@ -43,7 +46,7 @@ fn main() {
                 .unwrap(),
             _ => {}
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![timer::timer])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

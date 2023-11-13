@@ -1,9 +1,10 @@
 import { cva } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
 import { useSettingsContext } from '../settings/SettingsContext';
-import { useGameContext } from './GameContext';
 import { getGridData } from '../utils/getGridData';
+import { useGameContext } from './GameContext';
 import { GameState } from './useGameState';
+import { invoke } from '@tauri-apps/api';
 
 const styles = cva([
   'text-3xl',
@@ -23,6 +24,14 @@ export const FaceButton = () => {
   const settings = useSettingsContext();
   const [pressed, setPressed] = useState(false);
 
+  const onReset = () => {
+    setGameState({
+      type: 'RESET_GAME',
+      payload: getGridData(settings).minefield,
+    });
+    invoke('timer', { method: 'stop' });
+  };
+
   useEffect(() => {
     document.addEventListener('mousedown', () => setPressed(true));
     document.addEventListener('mouseup', () => setPressed(false));
@@ -33,15 +42,7 @@ export const FaceButton = () => {
   });
 
   return (
-    <button
-      className={styles()}
-      onClick={() =>
-        setGameState({
-          type: 'RESET_GAME',
-          payload: getGridData(settings).minefield,
-        })
-      }
-    >
+    <button className={styles()} onClick={onReset}>
       {!!finished ? getFinishedFace(finished) : getGameFace(pressed)}
     </button>
   );

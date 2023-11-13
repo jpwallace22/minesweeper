@@ -1,11 +1,11 @@
+import { invoke } from '@tauri-apps/api';
 import { cva } from 'class-variance-authority';
 import { ComponentPropsWithoutRef, FC, MouseEvent, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { useSettingsContext } from '../settings/SettingsContext';
-import { useGameContext } from './GameContext';
-// import Icon from './Icons';
-import { CellValue, Coordinate, NumberValues } from './playfield';
 import { getAdjacentCoordinates } from '../utils/getGridData';
+import { useGameContext } from './GameContext';
+import { CellValue, Coordinate, NumberValues } from './playfield';
 
 interface CellProps extends Omit<ComponentPropsWithoutRef<'button'>, 'value'> {
   coordinate: Coordinate;
@@ -25,7 +25,7 @@ const styles = cva(
         true: '',
       },
       active: {
-        true: 'bg-gray-300 pointer-events-none',
+        true: 'bg-gray-300 cursor-default',
         false: [
           'bg-gray-400',
           'border-3',
@@ -48,15 +48,15 @@ const styles = cva(
 );
 export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
   const { height, width } = useSettingsContext();
-
   const [{ activeCells, flaggedCells, minefield, running }, setGameState] =
     useGameContext();
+
   const ref = useRef<HTMLButtonElement>(null);
   const isBomb = value === 'bomb';
   const isFlagged = flaggedCells.has(JSON.stringify(coordinate));
   const isActive = activeCells.has(JSON.stringify(coordinate));
 
-  const evaluateAdjacentCells = ({
+  const chainEmptyCells = ({
     currentCell,
     evaluated = [],
   }: {
@@ -75,7 +75,7 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
 
       for (const neighborCell of adjacentCoordinates) {
         if (!evaluated.includes(JSON.stringify(neighborCell))) {
-          evaluateAdjacentCells({
+          chainEmptyCells({
             currentCell: neighborCell,
             evaluated,
           });
@@ -94,6 +94,7 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
         type: 'START_STOP',
         payload: { finished: null, running: true },
       });
+      invoke('timer', { method: 'start' });
     }
 
     if (isBomb) {
@@ -101,9 +102,10 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
         type: 'START_STOP',
         payload: { finished: 'loss', running: false },
       });
+      invoke('timer', { method: 'stop' });
     }
 
-    const cellsToMakeActive = evaluateAdjacentCells({
+    const cellsToMakeActive = chainEmptyCells({
       currentCell: coordinate,
     });
     setGameState({ type: 'ADD_ACTIVE_CELLS', payload: cellsToMakeActive });
@@ -126,6 +128,47 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
     }
   };
 
+  const onDoubleClick = (coordinate: Coordinate) => {
+    console.log('🔍 ~ onDoubleClick ~ coordinate:', coordinate);
+    if (!isActive) return;
+    const [x, y] = coordinate;
+    let flagCount = 0;
+    const value = Number(minefield[x][y] as NumberValues);
+    const adjacentCoords = getAdjacentCoordinates({
+      coordinate,
+      height,
+      width,
+    });
+
+    const unFlaggedAdjacentCells = adjacentCoords.filter(coord => {
+      if (flaggedCells.has(JSON.stringify(coord))) {
+        flagCount++;
+        return false;
+      }
+      return true;
+    });
+
+    if (flagCount === value) {
+      const cellsToActivate = unFlaggedAdjacentCells.flatMap(coord =>
+        chainEmptyCells({ currentCell: coord })
+      );
+      setGameState({
+        type: 'ADD_ACTIVE_CELLS',
+        payload: cellsToActivate,
+      });
+
+      unFlaggedAdjacentCells.forEach(([x, y]) => {
+        if (minefield[x][y] === 'bomb') {
+          setGameState({
+            type: 'START_STOP',
+            payload: { finished: 'loss', running: false },
+          });
+          invoke('timer', { method: 'stop' });
+        }
+      });
+    }
+  };
+
   const onMouseDown = (e: MouseEvent) => {
     if (e.button === 0 && !isFlagged) {
       ref.current?.classList.add('pressed');
@@ -144,6 +187,7 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
       onMouseUp={onMouseUp}
       onMouseOut={onMouseUp}
       onClick={() => onCellClick(coordinate)}
+      onDoubleClick={() => onDoubleClick(coordinate)}
       onContextMenu={e => onRightClick(e, coordinate)}
       {...props}
     >

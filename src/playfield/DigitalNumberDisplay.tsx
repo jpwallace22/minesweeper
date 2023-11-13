@@ -2,6 +2,7 @@ import { cva } from 'class-variance-authority';
 
 const styles = cva([
   'font-mono text-5xl font-bold',
+  'cursor-default',
   'text-red-600',
   'bg-gray-900',
   'relative',

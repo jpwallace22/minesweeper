@@ -1,8 +1,10 @@
+import { invoke } from '@tauri-apps/api';
 import { message } from '@tauri-apps/api/dialog';
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import { GameSettings } from '../settings/useSettings';
 import { getGridData } from '../utils/getGridData';
-import { MineField } from './playfield';
+import { useListen } from '../utils/useListen';
+import { Coordinate, MineField } from './playfield';
 
 export interface GameState {
   running: boolean;
@@ -15,7 +17,7 @@ export interface GameState {
 
 interface ActiveCellsAction {
   type: 'ADD_ACTIVE_CELLS';
-  payload: string[];
+  payload: string[] | Coordinate[];
 }
 
 interface AddSecondToTime {
@@ -70,9 +72,15 @@ export const GameStateReducer = (
 ): GameState => {
   switch (action.type) {
     case 'ADD_ACTIVE_CELLS':
+      let cellsToAdd: string[] = [];
+      if (typeof action.payload[0] === 'string') {
+        cellsToAdd = action.payload as string[];
+      } else {
+        action.payload.forEach(coord => cellsToAdd.push(JSON.stringify(coord)));
+      }
       return {
         ...state,
-        activeCells: new Set([...state.activeCells, ...action.payload]),
+        activeCells: new Set([...state.activeCells, ...cellsToAdd]),
       };
     case 'ADD_FLAGGED_CELL':
       return {
@@ -106,42 +114,48 @@ export const GameStateReducer = (
   }
 };
 
-const timer = new Worker('./src/utils/timer.ts');
+// const timer = new Worker('./src/utils/timer.ts');
 
 export const useGameState = (settings: GameSettings) => {
   const { height, width, bombCount } = settings;
-  const [state, dispatch] = useReducer(GameStateReducer, {
+  const [state, setGameState] = useReducer(GameStateReducer, {
     ...resettableState,
     minefield: [],
   });
-  const { activeCells, finished, running } = state;
+  const { activeCells, finished } = state;
+
+  // TODO: use web worker for web version
+  // useEffect(() => {
+  //   timer.onmessage = e => {
+  //     setGameState({ type: 'SET_TIMER', payload: e.data });
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   if (running) {
+  //     timer.postMessage('START');
+  //   } else {
+  //     timer.postMessage('STOP');
+  //   }
+  // }, [running]);
+
+  useListen('timer_tick', ({ payload }: { payload: number }) => {
+    setGameState({ type: 'SET_TIMER', payload });
+  });
 
   useEffect(() => {
-    timer.onmessage = e => {
-      dispatch({ type: 'SET_TIMER', payload: e.data });
-    };
-  }, []);
-
-  useEffect(() => {
-    if (running) {
-      timer.postMessage('START');
-    } else {
-      timer.postMessage('STOP');
-    }
-  }, [running]);
-
-  useMemo(() => {
     const { minefield } = getGridData(settings);
-    dispatch({ type: 'RESET_GAME', payload: minefield });
+    setGameState({ type: 'RESET_GAME', payload: minefield });
   }, [settings.height, settings.height, settings.bombCount]);
 
   if (activeCells.size === height * width - bombCount && !finished) {
-    dispatch({
+    setGameState({
       type: 'START_STOP',
       payload: { finished: 'win', running: false },
     });
+    invoke('timer', { method: 'stop' });
     message('You won. Play again?', 'Congratulations!!');
   }
 
-  return [state, dispatch] as const;
+  return [state, setGameState] as const;
 };

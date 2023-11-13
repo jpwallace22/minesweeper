@@ -1,4 +1,3 @@
-import { listen } from '@tauri-apps/api/event';
 import { LogicalSize, WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import useResizeObserver from 'use-resize-observer';
@@ -8,6 +7,7 @@ import { ScoreBar } from './playfield/ScoreBar';
 import { useGameState } from './playfield/useGameState';
 import { SettingsProvider } from './settings/SettingsContext';
 import { useSettings } from './settings/useSettings';
+import { useListen } from './utils/useListen';
 
 function App() {
   const { ref, width, height } = useResizeObserver<HTMLDivElement>();
@@ -15,20 +15,14 @@ function App() {
   const [gameState, setGameState] = useGameState(settings);
 
   // Listen for/create menu windows
-  useEffect(() => {
-    const unListen = listen('windows', ({ payload }: { payload: 'scores' }) => {
-      if (payload === 'scores') {
-        new WebviewWindow('scores', {
-          url: '../high_scores.html',
-          title: 'High Scores',
-        });
-      }
-    });
-
-    return () => {
-      unListen.then(f => f());
-    };
-  }, []);
+  useListen('windows', ({ payload }: { payload: 'scores' }) => {
+    if (payload === 'scores') {
+      new WebviewWindow('scores', {
+        url: '../high_scores.html',
+        title: 'High Scores',
+      });
+    }
+  });
 
   // Adjust window size based on app width / height
   useEffect(() => {

@@ -1,11 +1,10 @@
-import { invoke } from '@tauri-apps/api';
 import { cva } from 'class-variance-authority';
 import { ComponentPropsWithoutRef, FC, MouseEvent, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { useSettingsContext } from '../settings/SettingsContext';
 import { getAdjacentCoordinates } from '../utils/getGridData';
 import { useGameContext } from './GameContext';
-import { CellValue, Coordinate, NumberValues } from './playfield';
+import { CellValue, Coordinate, NumberValues } from './game';
 
 interface CellProps extends Omit<ComponentPropsWithoutRef<'button'>, 'value'> {
   coordinate: Coordinate;
@@ -94,7 +93,6 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
         type: 'START_STOP',
         payload: { finished: null, running: true },
       });
-      invoke('timer', { method: 'start' });
     }
 
     if (isBomb) {
@@ -102,7 +100,6 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
         type: 'START_STOP',
         payload: { finished: 'loss', running: false },
       });
-      invoke('timer', { method: 'stop' });
     }
 
     const cellsToMakeActive = chainEmptyCells({
@@ -129,7 +126,6 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
   };
 
   const onDoubleClick = (coordinate: Coordinate) => {
-    console.log('🔍 ~ onDoubleClick ~ coordinate:', coordinate);
     if (!isActive) return;
     const [x, y] = coordinate;
     let flagCount = 0;
@@ -163,7 +159,6 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
             type: 'START_STOP',
             payload: { finished: 'loss', running: false },
           });
-          invoke('timer', { method: 'stop' });
         }
       });
     }

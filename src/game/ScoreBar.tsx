@@ -3,6 +3,7 @@ import { useSettingsContext } from '../settings/SettingsContext';
 import { DigitalNumberDisplay } from './DigitalNumberDisplay';
 import { FaceButton } from './FaceButton';
 import { useGameContext } from './GameContext';
+import { GRID_DATA } from '../constants';
 
 const styles = cva([
   'flex justify-between items-center',
@@ -12,8 +13,9 @@ const styles = cva([
   'border-t-gray-500 border-l-gray-500 border-b-white border-r-white',
 ]);
 export const ScoreBar = () => {
-  const { bombCount } = useSettingsContext();
+  const { difficulty } = useSettingsContext();
   const [{ flaggedCells, time }] = useGameContext();
+  const { bombCount } = GRID_DATA[difficulty];
 
   return (
     <div className="bg-gray-300 px-2 pt-2">

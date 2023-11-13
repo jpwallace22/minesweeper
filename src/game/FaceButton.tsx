@@ -4,7 +4,6 @@ import { useSettingsContext } from '../settings/SettingsContext';
 import { getGridData } from '../utils/getGridData';
 import { useGameContext } from './GameContext';
 import { GameState } from './useGameState';
-import { invoke } from '@tauri-apps/api';
 
 const styles = cva([
   'text-3xl',
@@ -29,7 +28,6 @@ export const FaceButton = () => {
       type: 'RESET_GAME',
       payload: getGridData(settings).minefield,
     });
-    invoke('timer', { method: 'stop' });
   };
 
   useEffect(() => {

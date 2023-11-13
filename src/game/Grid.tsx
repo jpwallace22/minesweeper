@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { Cell } from './Cell';
 import { useGameContext } from './GameContext';
-import { Coordinate } from './playfield';
+import { Coordinate } from './game';
 
 const gridStyles = cva(
   [

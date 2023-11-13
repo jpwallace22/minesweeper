@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "tauri dev",
+    "dev:frontend": "vite",
+    "build": "tauri build",
+    "build:frontend": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "test:typecheck": "tsc --noEmit"

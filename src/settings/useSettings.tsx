@@ -1,14 +1,17 @@
 import { useEffect, useReducer } from 'react';
 import { useListen } from '../utils/useListen';
 import { useTauriStore } from '../utils/useTauriStore';
+import { GRID_DATA } from '../constants';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
+
 export interface Store {
   difficulty: Difficulty;
 }
-export interface GameSettings {
-  width: number;
+
+export interface GameSettings extends Store {
   height: number;
+  width: number;
   bombCount: number;
 }
 
@@ -19,24 +22,6 @@ interface SetDifficultyAction {
 
 type SettingsActions = SetDifficultyAction;
 
-const gridData = {
-  easy: {
-    width: 9,
-    height: 9,
-    bombCount: 10,
-  },
-  medium: {
-    width: 16,
-    height: 16,
-    bombCount: 40,
-  },
-  hard: {
-    width: 30,
-    height: 16,
-    bombCount: 99,
-  },
-};
-
 export const settingsReducer = (
   state: GameSettings,
   action: SettingsActions
@@ -44,7 +29,7 @@ export const settingsReducer = (
   const { type, payload } = action;
   switch (type) {
     case 'SET_DIFFICULTY':
-      return { ...state, ...gridData[payload] };
+      return { ...state, difficulty: payload, ...GRID_DATA[payload] };
     default:
       return state;
   }
@@ -53,8 +38,11 @@ export const settingsReducer = (
 export type UseSettings = ReturnType<typeof useSettings>;
 
 export const useSettings = () => {
-  const [state, dispatch] = useReducer(settingsReducer, gridData.easy);
-  const [store, setStore] = useTauriStore<Store>('settings', {
+  const [state, dispatch] = useReducer(settingsReducer, {
+    difficulty: 'easy',
+    ...GRID_DATA['easy'],
+  });
+  const [store, setStore] = useTauriStore('settings', {
     difficulty: 'easy',
   });
 
@@ -63,8 +51,8 @@ export const useSettings = () => {
   }, [store.difficulty]);
 
   useListen('difficulty_setting', ({ payload }: { payload: Difficulty }) => {
-    setStore({ ...store, difficulty: payload });
+    const difficulty = payload;
+    setStore({ ...store, difficulty });
   });
-
   return state;
 };

@@ -1,10 +1,10 @@
 import { LogicalSize, WebviewWindow, appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { GameProvider } from './playfield/GameContext';
-import { Grid } from './playfield/Grid';
-import { ScoreBar } from './playfield/ScoreBar';
-import { useGameState } from './playfield/useGameState';
+import { GameProvider } from './game/GameContext';
+import { Grid } from './game/Grid';
+import { ScoreBar } from './game/ScoreBar';
+import { useGameState } from './game/useGameState';
 import { SettingsProvider } from './settings/SettingsContext';
 import { useSettings } from './settings/useSettings';
 import { useListen } from './utils/useListen';

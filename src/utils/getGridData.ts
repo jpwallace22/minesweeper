@@ -1,5 +1,7 @@
 import { GameSettings } from '../settings/useSettings';
-import { Coordinate, MineField, NumberValues } from '../playfield/playfield';
+import { Coordinate, MineField, NumberValues } from '../game/game';
+
+type GridData = Pick<GameSettings, 'height' | 'width' | 'bombCount'>;
 
 /**
  * Generates a minefield grid based on the specified difficulty level.
@@ -7,7 +9,7 @@ import { Coordinate, MineField, NumberValues } from '../playfield/playfield';
  * @param difficulty - The difficulty level of the grid. It can be "easy", "medium", or "hard".
  * @returns The generated minefield grid based on the specified difficulty level. Each cell can either be undefined or contain a "bomb" value.
  */
-export const getGridData = (settings: GameSettings) => {
+export const getGridData = (settings: GridData) => {
   const grid = generateGrid(settings);
   const bombCoords = generateBombCoordinates(settings);
   const gridWithBombs = addBombsToGrid({ grid, bombCoords });
@@ -42,7 +44,7 @@ function generateBombCoordinates({
   bombCount,
   width,
   height,
-}: GameSettings): Set<Coordinate> {
+}: GridData): Set<Coordinate> {
   if (bombCount > width * height) {
     throw new Error('Number of coordinates requested exceeds grid size.');
   }

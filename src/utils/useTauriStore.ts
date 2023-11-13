@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Store } from 'tauri-plugin-store-api';
+import { Difficulty } from '../settings/useSettings';
+
+interface StoreSchema {
+  settings: {
+    difficulty: Difficulty;
+  };
+  scores: {
+    easy: number[];
+    medium: number[];
+    hard: number[];
+    custom: number[];
+  };
+}
+
 const stores: Record<string, Store> = {};
 function getTauriStore(filename: string) {
   if (!(filename in stores)) stores[filename] = new Store(filename);
@@ -16,19 +30,18 @@ function getTauriStore(filename: string) {
  * @param storeName - The name of the Tauri store file. Defaults to 'minesweeper_data.dat'.
  * @returns A tuple containing the state variable, setState function, and loading variable.
  */
-export function useTauriStore<T>(
-  key: string,
-  defaultValue: T,
-  storeName = 'minesweeper_data.dat'
-) {
-  const [state, setState] = useState<T>(defaultValue);
+export function useTauriStore<
+  TKey extends keyof StoreSchema & string,
+  TValue extends StoreSchema
+>(key: TKey, defaultValue: TValue[TKey], storeName = 'minesweeper_data.dat') {
+  const [state, setState] = useState(defaultValue);
   const [loading, setLoading] = useState(true);
   const store = getTauriStore(storeName);
 
   const updateStoreFromState = async () => {
     if (!loading) {
       setLoading(true);
-      store.set(key, state).then(() => {
+      store.set(key as string, state).then(() => {
         store.save();
       });
     }
@@ -37,9 +50,12 @@ export function useTauriStore<T>(
 
   useEffect(() => {
     (async () => {
-      const value = await store.get(key);
-      if (value) {
-        setState(value as T);
+      const value: string | Object | Array<unknown> | null = await store.get(
+        key
+      );
+
+      if (isValidValue(value)) {
+        setState(value as TValue[TKey]);
       } else {
         updateStoreFromState();
       }
@@ -53,3 +69,12 @@ export function useTauriStore<T>(
 
   return [state, setState, loading] as const;
 }
+
+const isValidValue = (value: unknown) => {
+  return (
+    value !== null &&
+    value !== undefined &&
+    (!Array.isArray(value) || value.length > 0) &&
+    (typeof value !== 'object' || Object.keys(value).length > 0)
+  );
+};

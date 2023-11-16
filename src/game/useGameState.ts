@@ -4,7 +4,7 @@ import { useEffect, useReducer } from 'react';
 import { GameSettings } from '../settings/useSettings';
 import { getGridData } from '../utils/getGridData';
 import { useListen } from '../utils/useListen';
-import { GameStateActions, MineField } from './game';
+import { GameStateActions, MineField } from './gameTypes';
 import { useTauriStore } from '../utils/useTauriStore';
 
 export interface GameState {
@@ -85,12 +85,7 @@ export const GameStateReducer = (
 // const timer = new Worker('./src/utils/timer.ts');
 
 export const useGameState = (settings: GameSettings) => {
-  const [scores, saveScoresToDisc] = useTauriStore('scores', {
-    easy: [],
-    medium: [],
-    hard: [],
-    custom: [],
-  });
+  const [scores, saveScoresToDisc] = useTauriStore('scores');
 
   const [state, setGameState] = useReducer(GameStateReducer, {
     ...resettableState,
@@ -147,12 +142,19 @@ export const useGameState = (settings: GameSettings) => {
          Play again?`,
         'Congratulations! You won!!'
       );
+
       saveScoresToDisc({
         ...scores,
-        [difficulty]: [...scores[difficulty], time],
+        [difficulty]: [...scores[difficulty], formatTime(time)],
       });
     }
   }, [activeCells.size]);
 
   return [state, setGameState] as const;
+};
+
+const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time - minutes * 60;
+  return `${minutes}:${seconds}`;
 };

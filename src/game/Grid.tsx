@@ -1,20 +1,15 @@
 import { cva } from 'class-variance-authority';
 import { Cell } from './Cell';
 import { useGameContext } from './GameContext';
-import { Coordinate } from './game';
+import { Coordinate } from './gameTypes';
 
-const gridStyles = cva(
-  [
-    'border-4 border-t-gray-500 border-l-gray-500 border-b-white border-r-white',
-  ],
-  {
-    variants: {
-      disabled: {
-        true: 'pointer-events-none',
-      },
+const gridStyles = cva(['border-topDark-lg'], {
+  variants: {
+    disabled: {
+      true: 'pointer-events-none',
     },
-  }
-);
+  },
+});
 
 export const Grid = () => {
   const [{ minefield, finished }] = useGameContext();

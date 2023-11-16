@@ -9,7 +9,7 @@ const styles = cva([
   'px-1',
   'h-12',
   'grid place-items-center',
-  'border-3 border-t-gray-500 border-l-gray-500 border-b-white border-r-white',
+  'border-topDark-sm',
 ]);
 
 export const DigitalNumberDisplay = ({ number }: { number: number }) => {

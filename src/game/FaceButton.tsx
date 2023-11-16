@@ -8,8 +8,7 @@ import { GameState } from './useGameState';
 const styles = cva([
   'text-3xl',
   'bg-gray-300',
-  'border-4',
-  'border-t-white border-l-white border-r-gray-500 border-b-gray-500',
+  'border-topLight-lg',
   'active:border-t-gray-200 active:border-l-gray-200 active:border-r-gray-400 active:border-b-gray-400',
   'active:border-2 active:p-0.5 active:scale-90',
   'w-10',

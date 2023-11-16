@@ -19,7 +19,7 @@
     -webkit-text-size-adjust: 100%;
     -webkit-touch-callout: none; /* iOS Safari */
     user-select: none;
-    @apply bg-gray-800;
+    @apply bg-gray-300;
   }
 }
 
@@ -30,5 +30,24 @@
 
   .red-text-glow {
     text-shadow: 0 0 4px #d5404a;
+  }
+
+  .border-topDark {
+    @apply border-t-gray-500 border-l-gray-500 border-b-white border-r-white;
+  }
+  .border-topLight {
+    @apply border-b-gray-500 border-r-gray-500 border-t-white border-l-white;
+  }
+  .border-topDark-lg {
+    @apply border-4 border-topDark;
+  }
+  .border-topDark-sm {
+    @apply border-3 border-topDark;
+  }
+  .border-topLight-lg {
+    @apply border-4 border-topLight;
+  }
+  .border-topLight-sm {
+    @apply border-3 border-topLight;
   }
 }

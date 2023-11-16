@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Store } from 'tauri-plugin-store-api';
 import { Difficulty } from '../settings/useSettings';
 
-interface StoreSchema {
+export interface StoreSchema {
   settings: {
     difficulty: Difficulty;
   };
@@ -10,9 +10,19 @@ interface StoreSchema {
     easy: number[];
     medium: number[];
     hard: number[];
-    custom: number[];
   };
 }
+
+export const initialState = {
+  settings: {
+    difficulty: 'easy',
+  },
+  scores: {
+    easy: [],
+    medium: [],
+    hard: [],
+  },
+};
 
 const stores: Record<string, Store> = {};
 function getTauriStore(filename: string) {
@@ -33,15 +43,19 @@ function getTauriStore(filename: string) {
 export function useTauriStore<
   TKey extends keyof StoreSchema & string,
   TValue extends StoreSchema
->(key: TKey, defaultValue: TValue[TKey], storeName = 'minesweeper_data.dat') {
+>(
+  key: TKey,
+  defaultValue: TValue[TKey] = initialState[key] as TValue[TKey],
+  storeName = '.ms_settings.json'
+) {
   const [state, setState] = useState(defaultValue);
   const [loading, setLoading] = useState(true);
   const store = getTauriStore(storeName);
 
-  const updateStoreFromState = async () => {
+  const updateStore = async (value: TValue[TKey]) => {
     if (!loading) {
       setLoading(true);
-      store.set(key as string, state).then(() => {
+      store.set(key as string, value).then(() => {
         store.save();
       });
     }
@@ -57,14 +71,14 @@ export function useTauriStore<
       if (isValidValue(value)) {
         setState(value as TValue[TKey]);
       } else {
-        updateStoreFromState();
+        updateStore(defaultValue);
       }
     })();
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    updateStoreFromState();
+    updateStore(state as TValue[TKey]);
   }, [state]);
 
   return [state, setState, loading] as const;

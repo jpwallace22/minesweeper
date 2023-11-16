@@ -1,7 +1,8 @@
+import { WebviewWindow } from '@tauri-apps/api/window';
 import { useEffect, useReducer } from 'react';
+import { GRID_DATA } from '../constants';
 import { useListen } from '../utils/useListen';
 import { useTauriStore } from '../utils/useTauriStore';
-import { GRID_DATA } from '../constants';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -42,8 +43,18 @@ export const useSettings = () => {
     difficulty: 'easy',
     ...GRID_DATA['easy'],
   });
-  const [store, setStore] = useTauriStore('settings', {
-    difficulty: 'easy',
+  const [store, setStore] = useTauriStore('settings');
+
+  // Listen for/create menu windows
+  useListen('windows', ({ payload }: { payload: 'scores' }) => {
+    if (payload === 'scores') {
+      new WebviewWindow('scores', {
+        url: '../high_scores.html',
+        title: 'High Scores',
+        width: 400,
+        height: 600,
+      });
+    }
   });
 
   useEffect(() => {

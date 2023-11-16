@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { useSettingsContext } from '../settings/SettingsContext';
 import { getAdjacentCoordinates } from '../utils/getGridData';
 import { useGameContext } from './GameContext';
-import { CellValue, Coordinate, NumberValues } from './game';
+import { CellValue, Coordinate, NumberValues } from './gameTypes';
 
 interface CellProps extends Omit<ComponentPropsWithoutRef<'button'>, 'value'> {
   coordinate: Coordinate;
@@ -25,15 +25,7 @@ const styles = cva(
       },
       active: {
         true: 'bg-gray-300 cursor-default',
-        false: [
-          'bg-gray-400',
-          'border-3',
-          'border-b-gray-500',
-          'border-r-gray-500',
-          'border-l-white',
-          'border-t-white',
-          'cursor-pointer',
-        ],
+        false: ['bg-gray-400', 'border-topLight-sm', 'cursor-pointer'],
       },
     },
     compoundVariants: [

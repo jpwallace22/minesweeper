@@ -38,7 +38,7 @@ impl AddDefaultSubmenus for Menu {
                         .add_item(CustomMenuItem::new("medium".to_string(), "Medium"))
                         .add_item(CustomMenuItem::new("hard".to_string(), "Hard")),
                 ))
-                .add_item(CustomMenuItem::new("scores".to_string(), "Scores")),
+                .add_item(CustomMenuItem::new("scores".to_string(), "High Scores")),
         ))
     }
 

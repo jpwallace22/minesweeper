@@ -1,6 +1,7 @@
-use crate::GameState;
 use std::{sync::Arc, time::Duration};
 use tokio::time::Instant;
+
+use crate::state::GameState;
 
 #[tauri::command]
 /// Controls a timer that emits every second to the frontend.
@@ -27,25 +28,26 @@ pub fn timer(method: &str, state: tauri::State<GameState>, window: tauri::Window
 
     if *running {
         let running_inner = Arc::clone(&state.running);
+        let time_inner = Arc::clone(&state.time);
         tauri::async_runtime::spawn(async move {
-            println!("Async timer started");
+            println!("Game running");
 
-            for _elapsed_seconds in 0..999 {
+            loop {
                 tokio::time::sleep(Duration::from_secs(1)).await;
 
+                let mut time = time_inner.lock().unwrap();
                 let current_time = Instant::now();
                 let elapsed = current_time.duration_since(start_time);
                 let elapsed_secs = elapsed.as_secs();
 
                 if !*running_inner.lock().unwrap() {
-                    println!("Timer stopped at {} seconds", elapsed_secs);
+                    println!("Game stopped at {} seconds", time);
                     break;
                 }
 
-                window.emit("timer_tick", Some(elapsed_secs)).unwrap();
+                *time = elapsed_secs;
+                window.emit("timer_tick", time.clone()).unwrap();
             }
         });
-
-        println!("Timer hit max");
     }
 }

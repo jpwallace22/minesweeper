@@ -1,5 +1,5 @@
+import { Coordinate, MineField, NumberValues } from '../game/gameTypes';
 import { GameSettings } from '../settings/useSettings';
-import { Coordinate, MineField, NumberValues } from '../game/game';
 
 type GridData = Pick<GameSettings, 'height' | 'width' | 'bombCount'>;
 

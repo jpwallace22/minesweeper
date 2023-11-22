@@ -2,22 +2,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use crate::menu::AddDefaultSubmenus;
-use std::sync::{Arc, Mutex};
+use state::GameState;
+// use state::init_state;
 use tauri::Menu;
 
-pub struct GameState {
-    running: Arc<Mutex<bool>>,
-}
-
 mod menu;
+mod state;
 mod timer;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .manage(GameState {
-            running: Mutex::new(false).into(),
-        })
+        .manage(GameState::init())
         .menu(
             Menu::new()
                 .add_default_app_submenu_if_macos("Minesweeper")

@@ -19,7 +19,6 @@
     -webkit-text-size-adjust: 100%;
     -webkit-touch-callout: none; /* iOS Safari */
     user-select: none;
-    @apply bg-gray-300;
   }
 }
 

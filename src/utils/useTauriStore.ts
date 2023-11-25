@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Store } from 'tauri-plugin-store-api';
+import { Store as Tauri } from 'tauri-plugin-store-api';
 import { Difficulty } from '../settings/useSettings';
 
 export interface StoreSchema {
@@ -24,9 +24,11 @@ export const initialState = {
   },
 };
 
-const stores: Record<string, Store> = {};
+const stores: Record<string, Tauri> = {};
 function getTauriStore(filename: string) {
-  if (!(filename in stores)) stores[filename] = new Store(filename);
+  if (!(filename in stores)) {
+    stores[filename] = new Tauri(filename);
+  }
   return stores[filename];
 }
 
@@ -81,7 +83,7 @@ export function useTauriStore<
     updateStore(state as TValue[TKey]);
   }, [state]);
 
-  return [state, setState, loading] as const;
+  return [state, setState] as const;
 }
 
 const isValidValue = (value: unknown) => {
@@ -92,3 +94,5 @@ const isValidValue = (value: unknown) => {
     (typeof value !== 'object' || Object.keys(value).length > 0)
   );
 };
+
+export type Store = typeof useTauriStore;

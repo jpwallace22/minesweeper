@@ -1,11 +1,12 @@
 import { invoke } from '@tauri-apps/api';
-import { message } from '@tauri-apps/api/dialog';
 import { useEffect, useReducer } from 'react';
 import { GameSettings } from '../settings/useSettings';
 import { getGridData } from '../utils/getGridData';
 import { useListen } from '../utils/useListen';
 import { GameStateActions, MineField } from './gameTypes';
-import { useTauriStore } from '../utils/useTauriStore';
+import { useStorage } from '../utils/useStorage';
+import { useConfig } from '../utils/useConfig';
+import { message } from '../utils/message';
 
 export interface GameState {
   running: boolean;
@@ -82,35 +83,39 @@ export const GameStateReducer = (
   }
 };
 
-// const timer = new Worker('./src/utils/timer.ts');
+const timer = new Worker('./src/utils/timer_worker.ts');
 
 export const useGameState = (settings: GameSettings) => {
-  const [scores, saveScoresToDisc] = useTauriStore('scores');
-
+  const { isWeb } = useConfig();
+  const [scores, saveScores] = useStorage('scores');
   const [state, setGameState] = useReducer(GameStateReducer, {
     ...resettableState,
     minefield: [],
   });
+
   const { height, width, bombCount, difficulty } = settings;
   const { activeCells, finished, running, time } = state;
 
-  // TODO: use web worker for web version
-  // useEffect(() => {
-  //   timer.onmessage = e => {
-  //     setGameState({ type: 'SET_TIMER', payload: e.data });
-  //   };
-  // }, []);
+  // Invoke Web worker async timer (Web)
+  useEffect(() => {
+    if (!isWeb) return;
+    if (running) {
+      timer.postMessage('START');
+    } else {
+      timer.postMessage('STOP');
+    }
+  }, [running]);
 
-  // useEffect(() => {
-  //   if (running) {
-  //     timer.postMessage('START');
-  //   } else {
-  //     timer.postMessage('STOP');
-  //   }
-  // }, [running]);
+  useEffect(() => {
+    if (!isWeb) return;
+    timer.onmessage = e => {
+      setGameState({ type: 'SET_TIMER', payload: e.data });
+    };
+  }, []);
 
   // Invoke Rust async timer
   useEffect(() => {
+    if (isWeb) return;
     if (running) {
       invoke('timer', { method: 'start' });
     } else {
@@ -136,14 +141,24 @@ export const useGameState = (settings: GameSettings) => {
         type: 'START_STOP',
         payload: { finished: 'win', running: false },
       });
-      message(
-        `Difficulty: ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-         Time: ${time} seconds
-         Play again?`,
-        'Congratulations! You won!!'
-      );
 
-      saveScoresToDisc({
+      message({
+        message: `Difficulty: ${
+          difficulty.charAt(0).toUpperCase() + difficulty.slice(1)
+        }
+Time: ${time} seconds
+Play again?`,
+        title: 'Congratulations! You won!!',
+        isWeb,
+      });
+      // message(
+      //   `Difficulty: ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+      //    Time: ${time} seconds
+      //    Play again?`,
+      //   'Congratulations! You won!!'
+      // );
+
+      saveScores({
         ...scores,
         [difficulty]: [...scores[difficulty], formatTime(time)],
       });

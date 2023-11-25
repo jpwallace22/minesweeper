@@ -6,6 +6,9 @@ import { useGameContext } from './GameContext';
 import { GameState } from './useGameState';
 
 const styles = cva([
+  // downloaded font doesn't handle emojis well.
+  'font-sans',
+  'leading-8',
   'text-3xl',
   'bg-gray-300',
   'border-topLight-lg',
@@ -13,8 +16,6 @@ const styles = cva([
   'active:border-2 active:p-0.5 active:scale-90',
   'w-10',
   'h-10',
-  'grid',
-  'place-items-center',
 ]);
 
 export const FaceButton = () => {

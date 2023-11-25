@@ -1,5 +1,6 @@
 import { EventCallback, EventName, listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
+import { useConfig } from './useConfig';
 
 /**
  * Hook that listens for events using the Tauri API and cleans itself up
@@ -13,6 +14,11 @@ export const useListen = <T>(
   handler: EventCallback<T>,
   deps: any[] = []
 ): void => {
+  const { isWeb } = useConfig();
+
+  if (isWeb) return;
+  console.log('🔍 ~ isWeb:', isWeb);
+
   useEffect(() => {
     const unListen = listen(event, handler);
 

@@ -104,13 +104,14 @@ export const useGameState = (settings: GameSettings) => {
     } else {
       timer.postMessage('STOP');
     }
-  }, [running]);
+  }, [running, isWeb]);
 
   useEffect(() => {
     if (!isWeb) return;
     timer.onmessage = e => {
       setGameState({ type: 'SET_TIMER', payload: e.data });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Invoke Rust async timer
@@ -121,7 +122,7 @@ export const useGameState = (settings: GameSettings) => {
     } else {
       invoke('timer', { method: 'stop' });
     }
-  }, [running]);
+  }, [running, isWeb]);
 
   // Listen for timer updates and update state
   useListen('timer_tick', ({ payload }: { payload: number }) => {
@@ -132,7 +133,7 @@ export const useGameState = (settings: GameSettings) => {
   useEffect(() => {
     const { minefield } = getGridData({ height, width, bombCount });
     setGameState({ type: 'RESET_GAME', payload: minefield });
-  }, [settings.height, settings.width, settings.bombCount]);
+  }, [height, width, bombCount]);
 
   // Win condition
   useEffect(() => {
@@ -163,7 +164,18 @@ Play again?`,
         [difficulty]: [...scores[difficulty], formatTime(time)],
       });
     }
-  }, [activeCells.size]);
+  }, [
+    activeCells.size,
+    bombCount,
+    difficulty,
+    finished,
+    height,
+    isWeb,
+    saveScores,
+    scores,
+    time,
+    width,
+  ]);
 
   return [state, setGameState] as const;
 };

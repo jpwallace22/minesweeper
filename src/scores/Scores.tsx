@@ -4,7 +4,6 @@ import { useStorage } from '../utils/useStorage';
 
 export const Scores = () => {
   const [allScores] = useStorage('scores');
-  console.log('🔍 ~ Scores ~ allScores:', allScores);
 
   const scoreCount = Array.from({ length: 3 });
 

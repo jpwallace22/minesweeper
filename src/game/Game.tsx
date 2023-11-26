@@ -2,7 +2,7 @@ import { Root } from '../Root';
 import { Grid } from './Grid';
 import { ScoreBar } from './ScoreBar';
 
-function App() {
+function Game() {
   return (
     <Root>
       <div className="bg-black">
@@ -13,4 +13,4 @@ function App() {
   );
 }
 
-export default App;
+export default Game;

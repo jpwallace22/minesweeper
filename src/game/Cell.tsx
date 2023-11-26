@@ -191,7 +191,7 @@ interface IconProps extends Omit<ComponentPropsWithoutRef<'svg'>, 'id'> {
   size?: number;
 }
 
-const Icon: FC<IconProps> = ({ id, className, fill, stroke, size, ...props }) =>
+const Icon: FC<IconProps> = ({ id, size, ...props }) =>
   id ? (
     <svg
       width={size || 24}

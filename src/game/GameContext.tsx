@@ -9,10 +9,10 @@ export type GameProviderProps = {
   children: ReactNode;
 };
 
-const GameContext = createContext<GameContext>({} as GameContext);
+const Context = createContext<GameContext>({} as GameContext);
 
 export const GameProvider: FC<GameProviderProps> = ({ value, children }) => {
-  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
-export const useGameContext = () => useContext(GameContext);
+export const useGameContext = () => useContext(Context);

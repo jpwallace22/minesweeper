@@ -20,7 +20,7 @@ function Layout({ children }: PropsWithChildren) {
     (async () => {
       appWindow.setSize(new LogicalSize(width, height + 28));
     })();
-  }, [width, height]);
+  }, [width, height, isWeb]);
 
   return (
     <SettingsProvider value={settings}>

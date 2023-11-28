@@ -5,6 +5,7 @@ import { useSettingsContext } from '../settings/SettingsContext';
 import { getAdjacentCoordinates } from '../utils/getGridData';
 import { useGameContext } from './GameContext';
 import { CellValue, Coordinate, NumberValues } from './gameTypes';
+import { Icon } from './Icon';
 
 interface CellProps extends Omit<ComponentPropsWithoutRef<'button'>, 'value'> {
   coordinate: Coordinate;
@@ -39,7 +40,7 @@ const styles = cva(
 );
 export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
   const { height, width } = useSettingsContext();
-  const [{ activeCells, flaggedCells, minefield, running }, setGameState] =
+  const { activeCells, flaggedCells, minefield, running, setGameState } =
     useGameContext();
 
   const ref = useRef<HTMLButtonElement>(null);
@@ -178,28 +179,10 @@ export const Cell: FC<CellProps> = ({ coordinate, value, ...props }) => {
       onContextMenu={e => onRightClick(e, coordinate)}
       {...props}
     >
-      {isActive && <Icon id={value} />}
-      {isFlagged && <Icon id="flag" />}
+      {isActive && value && (
+        <Icon icon={value === 'bomb' ? 'Bomb' : `Svg${value}`} />
+      )}
+      {isFlagged && <Icon icon="Flag" />}
     </button>
   );
 };
-
-type MineFieldIcons = 'flag' | 'bomb' | NumberValues;
-
-interface IconProps extends Omit<ComponentPropsWithoutRef<'svg'>, 'id'> {
-  id?: MineFieldIcons | null;
-  size?: number;
-}
-
-const Icon: FC<IconProps> = ({ id, className, fill, stroke, size, ...props }) =>
-  id ? (
-    <svg
-      width={size || 24}
-      height={size || 24}
-      role="img"
-      aria-label={id}
-      {...props}
-    >
-      <use href={`/sprite.svg#${id}`} />
-    </svg>
-  ) : null;

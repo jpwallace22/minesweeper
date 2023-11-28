@@ -20,7 +20,7 @@ function Layout({ children }: PropsWithChildren) {
     (async () => {
       appWindow.setSize(new LogicalSize(width, height + 28));
     })();
-  }, [width, height]);
+  }, [width, height, isWeb]);
 
   return (
     <SettingsProvider value={settings}>
@@ -35,7 +35,7 @@ function Layout({ children }: PropsWithChildren) {
 
 export function Root({ children }: PropsWithChildren) {
   const config = {
-    isWeb: !window.__TAURI__,
+    isWeb: !window.__TAURI_METADATA__,
   };
 
   return (

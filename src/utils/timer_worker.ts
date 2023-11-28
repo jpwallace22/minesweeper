@@ -1,6 +1,7 @@
+/* eslint-disable no-restricted-globals */
 let timerStart = false;
 let seconds = 1;
-let ticker: number;
+let ticker: NodeJS.Timeout;
 
 self.onmessage = e => {
   if (e.data === 'STOP') {

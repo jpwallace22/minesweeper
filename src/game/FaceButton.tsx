@@ -19,7 +19,7 @@ const styles = cva([
 ]);
 
 export const FaceButton = () => {
-  const [{ finished }, setGameState] = useGameContext();
+  const { finished, setGameState } = useGameContext();
   const settings = useSettingsContext();
   const [pressed, setPressed] = useState(false);
 

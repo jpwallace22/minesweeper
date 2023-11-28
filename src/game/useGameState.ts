@@ -7,6 +7,9 @@ import { GameStateActions, MineField } from './gameTypes';
 import { useStorage } from '../utils/useStorage';
 import { useConfig } from '../utils/useConfig';
 import { message } from '../utils/message';
+import TimerWorker from '../utils/timer_worker?worker';
+
+const timer = new TimerWorker();
 
 export interface GameState {
   running: boolean;
@@ -83,8 +86,6 @@ export const GameStateReducer = (
   }
 };
 
-const timer = new Worker('./src/utils/timer_worker.ts');
-
 export const useGameState = (settings: GameSettings) => {
   const { isWeb } = useConfig();
   const [scores, saveScores] = useStorage('scores');
@@ -104,13 +105,14 @@ export const useGameState = (settings: GameSettings) => {
     } else {
       timer.postMessage('STOP');
     }
-  }, [running]);
+  }, [running, isWeb]);
 
   useEffect(() => {
     if (!isWeb) return;
     timer.onmessage = e => {
       setGameState({ type: 'SET_TIMER', payload: e.data });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Invoke Rust async timer
@@ -121,18 +123,18 @@ export const useGameState = (settings: GameSettings) => {
     } else {
       invoke('timer', { method: 'stop' });
     }
-  }, [running]);
+  }, [running, isWeb]);
 
   // Listen for timer updates and update state
   useListen('timer_tick', ({ payload }: { payload: number }) => {
     setGameState({ type: 'SET_TIMER', payload });
   });
 
-  // adjust minefield when update grid to settings
+  // adjust minefield when update grid with settings
   useEffect(() => {
     const { minefield } = getGridData({ height, width, bombCount });
     setGameState({ type: 'RESET_GAME', payload: minefield });
-  }, [settings.height, settings.width, settings.bombCount]);
+  }, [height, width, bombCount]);
 
   // Win condition
   useEffect(() => {
@@ -151,21 +153,26 @@ Play again?`,
         title: 'Congratulations! You won!!',
         isWeb,
       });
-      // message(
-      //   `Difficulty: ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-      //    Time: ${time} seconds
-      //    Play again?`,
-      //   'Congratulations! You won!!'
-      // );
 
       saveScores({
         ...scores,
         [difficulty]: [...scores[difficulty], formatTime(time)],
       });
     }
-  }, [activeCells.size]);
+  }, [
+    activeCells.size,
+    bombCount,
+    difficulty,
+    finished,
+    height,
+    isWeb,
+    saveScores,
+    scores,
+    time,
+    width,
+  ]);
 
-  return [state, setGameState] as const;
+  return { ...state, setGameState } as const;
 };
 
 const formatTime = (time: number) => {

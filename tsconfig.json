@@ -6,6 +6,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "sourceMap": false,
+    "types": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -21,6 +22,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src", "lib", "template.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

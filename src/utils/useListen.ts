@@ -12,18 +12,17 @@ import { useConfig } from './useConfig';
 export const useListen = <T>(
   event: EventName,
   handler: EventCallback<T>,
-  deps: any[] = []
+  deps: unknown[] = []
 ): void => {
   const { isWeb } = useConfig();
 
-  if (isWeb) return;
-  console.log('🔍 ~ isWeb:', isWeb);
-
   useEffect(() => {
+    if (isWeb) return;
     const unListen = listen(event, handler);
 
     return () => {
       unListen.then(f => f());
     };
-  }, deps);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, handler, isWeb, ...deps]);
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Store as Tauri } from 'tauri-plugin-store-api';
 import { Difficulty } from '../settings/useSettings';
 
@@ -54,19 +54,22 @@ export function useTauriStore<
   const [loading, setLoading] = useState(true);
   const store = getTauriStore(storeName);
 
-  const updateStore = async (value: TValue[TKey]) => {
-    if (!loading) {
-      setLoading(true);
-      store.set(key as string, value).then(() => {
-        store.save();
-      });
-    }
-    setLoading(false);
-  };
+  const updateStore = useCallback(
+    async (value: TValue[TKey]) => {
+      if (!loading) {
+        setLoading(true);
+        store.set(key as string, value).then(() => {
+          store.save();
+        });
+      }
+      setLoading(false);
+    },
+    [key, loading, store]
+  );
 
   useEffect(() => {
     (async () => {
-      const value: string | Object | Array<unknown> | null = await store.get(
+      const value: string | object | Array<unknown> | null = await store.get(
         key
       );
 
@@ -77,11 +80,11 @@ export function useTauriStore<
       }
     })();
     setLoading(false);
-  }, []);
+  }, [defaultValue, key, store, updateStore]);
 
   useEffect(() => {
     updateStore(state as TValue[TKey]);
-  }, [state]);
+  }, [state, updateStore]);
 
   return [state, setState] as const;
 }

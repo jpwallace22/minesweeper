@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useConfig } from './useConfig';
 import { useLocalStorage } from './useLocalStorage';
 import { StoreSchema, Store, useTauriStore } from './useTauriStore';

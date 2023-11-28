@@ -142,7 +142,7 @@ export const getAdjacentCoordinates = ({
   height: number;
   width: number;
 }): Coordinate[] => {
-  const adjacentCoordinates: Coordinate[] = new Array();
+  const adjacentCoordinates: Coordinate[] = [];
   const [x, y] = coordinate;
   const offsets = [
     [-1, -1],

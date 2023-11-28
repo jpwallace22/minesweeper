@@ -12,7 +12,7 @@ const gridStyles = cva(['border-topDark-lg'], {
 });
 
 export const Grid = () => {
-  const [{ minefield, finished }] = useGameContext();
+  const { minefield, finished } = useGameContext();
 
   return (
     <div className="p-2 bg-gray-300">

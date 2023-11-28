@@ -27,6 +27,6 @@ const formatForGameClock = (num: number) => {
     num = 999;
   }
 
-  var s = '000' + num;
+  const s = '000' + num;
   return s.substring(s.length - 3);
 };

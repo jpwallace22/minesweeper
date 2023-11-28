@@ -13,7 +13,7 @@ const styles = cva([
 ]);
 export const ScoreBar = () => {
   const { difficulty } = useSettingsContext();
-  const [{ flaggedCells, time }] = useGameContext();
+  const { flaggedCells, time } = useGameContext();
   const { bombCount } = GRID_DATA[difficulty];
 
   return (

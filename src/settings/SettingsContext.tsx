@@ -9,7 +9,9 @@ export type SettingsProviderProps = {
   children: ReactNode;
 };
 
-const Context = createContext<SettingsContext>({} as SettingsContext);
+const Context = createContext<SettingsContext>({
+  difficulty: 'easy',
+} as SettingsContext);
 
 export const SettingsProvider: FC<SettingsProviderProps> = ({
   value,

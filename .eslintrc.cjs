@@ -1,5 +1,5 @@
 module.exports = {
-  ignorePatterns: ['**/*.cjs'],
+  ignorePatterns: ['**/*.cjs', '**/icons/*.tsx'],
   env: {
     browser: true,
     es2021: true,

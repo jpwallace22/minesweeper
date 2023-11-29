@@ -9,7 +9,7 @@ const config: Config = {
         '3': '3px',
       },
       fontFamily: {
-        mono: ['Digital', ...fontFamily.mono],
+        digital: ['Digital', ...fontFamily.mono],
       },
     },
   },

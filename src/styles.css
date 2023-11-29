@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: Digital;
-  src: url('assets/digital-7-mono.ttf') format('truetype');
-}
-
 @layer base {
   :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
@@ -19,6 +14,11 @@
     -webkit-text-size-adjust: 100%;
     -webkit-touch-callout: none; /* iOS Safari */
     user-select: none;
+  }
+
+  @font-face {
+    font-family: Digital;
+    src: url('assets/digital-7-mono.ttf') format('truetype');
   }
 }
 

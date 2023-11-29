@@ -7,7 +7,7 @@ import { GameStateActions, MineField } from './gameTypes';
 import { useStorage } from '../utils/useStorage';
 import { useConfig } from '../utils/useConfig';
 import { message } from '../utils/message';
-import TimerWorker from '../utils/timer_worker?worker';
+import TimerWorker from '../utils/timer_worker?worker&inline';
 
 const timer = new TimerWorker();
 

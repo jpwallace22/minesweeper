@@ -6,9 +6,8 @@ import { useGameContext } from './GameContext';
 import { GameState } from './useGameState';
 
 const styles = cva([
-  // downloaded font doesn't handle emojis well.
-  'font-sans',
-  'leading-8',
+  'font-mono',
+  '!leading-8',
   'text-3xl',
   'bg-gray-300',
   'border-topLight-lg',
